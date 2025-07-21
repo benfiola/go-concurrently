@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"strings"
 	"sync"
 
 	"golang.org/x/sync/errgroup"
@@ -78,9 +79,14 @@ func Run(ctx context.Context, cmdSlices ...[]string) error {
 		cmd.Stdout = stdout
 		cmd.Stderr = stderr
 		group.Go(func() error {
+			stdout.Write(fmt.Appendf([]byte{}, "command starting: %s\n", strings.Join(cmd.Args, " ")))
 			err := cmd.Run()
 			stdout.Flush()
 			stderr.Flush()
+			if err != nil {
+				stderr.Write(fmt.Appendf([]byte{}, "command failed: %s\n", err.Error()))
+			}
+			stdout.Write(fmt.Appendf([]byte{}, "command finished\n"))
 			return err
 		})
 	}
