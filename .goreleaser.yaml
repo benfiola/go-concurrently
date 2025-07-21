@@ -1,0 +1,30 @@
+version: 2
+
+snapshot:
+  version_template: "{{ .Version }}+SNAPSHOT-{{.ShortCommit}}"
+
+before:
+  hooks:
+    - echo "{{ .Version }}" > pkg/version.txt
+
+builds:
+  - id: concurrently
+    binary: concurrently
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - windows
+      - linux
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+    main: ./cmd/concurrently
+    mod_timestamp: "{{ .CommitTimestamp }}"
+
+archives:
+  - id: concurrently
+    builds: 
+      - concurrently
+    format: binary
+    name_template: "concurrently-{{ .Version }}-{{ .Os }}-{{ .Arch }}"
